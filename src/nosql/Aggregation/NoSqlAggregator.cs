@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MongoDB.Driver;
-using MongoDB.Bson;
-using MongoDB.Driver.Builders;
-
-namespace NoSql.Aggregate
+﻿namespace nosql.Aggregation
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Connectors;
+    using Interfaces;
+    using MongoDB.Bson;
+    using MongoDB.Driver;
+    using MongoDB.Driver.Builders;
+    using NoSql;
+
     public class NoSqlAggregator : INoSqlAggregate
     {
-        private INoSqlConnect _connection;
+        private readonly INoSqlConnect _connection;
 
         public NoSqlAggregator()
         {
@@ -32,8 +34,6 @@ namespace NoSql.Aggregate
 
         }
 
-        #region Collection Methods
-
         public INoSqlConnect GetCurrentConnection() { return _connection; }
 
         public NoSqlAggregator ChangeCollection(string collectionName)
@@ -48,18 +48,12 @@ namespace NoSql.Aggregate
             return this;
         } 
 
-        #endregion
-        #region Count/Distinct Methods
-       
         public long Count() { return _connection.GetCurrentCollection().Count(); }
         public long Count(IMongoQuery query) { return _connection.GetCurrentCollection().Count(query); }
         public IEnumerable<BsonValue> Distinct(string key) { return _connection.GetCurrentCollection().Distinct(key); }
         public IEnumerable<BsonValue> Distinct(string key, IMongoQuery query) { return _connection.GetCurrentCollection().Distinct(key, query); }
         public IEnumerable<TResult> Distinct<TResult>(string key) { return _connection.GetCurrentCollection().Distinct<TResult>(key); }
         public IEnumerable<TResult> Distinct<TResult>(string key, IMongoQuery query) { return _connection.GetCurrentCollection().Distinct<TResult>(key, query); }
-        
-        #endregion
-        #region Aggregate Commands
 
         public IEnumerable<BsonDocument> Aggregate(params BsonDocument[] operations)
         {
@@ -68,21 +62,19 @@ namespace NoSql.Aggregate
 
         public IEnumerable<BsonDocument> Aggregate(NoSqlPipeline pipeline)
         {
-            return _connection.GetCurrentCollection().Aggregate(pipeline.pipeline.ToArray()).ResultDocuments;
+            return _connection.GetCurrentCollection().Aggregate(pipeline.Pipeline.ToArray()).ResultDocuments;
         }
 
         public IEnumerable<BsonDocument> Aggregate(NoSqlPipeline pipeline, Func<BsonDocument, BsonDocument> filter)
         {
-            return _connection.GetCurrentCollection().Aggregate(pipeline.pipeline.ToArray()).ResultDocuments;
+            return _connection.GetCurrentCollection().Aggregate(pipeline.Pipeline.ToArray()).ResultDocuments;
         }
 
         public IEnumerable<IDictionary> AsDictionary(NoSqlPipeline pipeline)
         {
-            return _connection.GetCurrentCollection().Aggregate(pipeline.pipeline.ToArray()).ResultDocuments.Select(x => x.ToDictionary());
+            return _connection.GetCurrentCollection().Aggregate(pipeline.Pipeline.ToArray()).ResultDocuments.Select(x => x.ToDictionary());
         } 
 
-        #endregion
-        #region Map/Reduce
 
         public IEnumerable<BsonDocument> MapReduce(string map, string reduce)
         {
@@ -158,9 +150,6 @@ namespace NoSql.Aggregate
 
         public IEnumerable<BsonDocument> MapReduce(string map, string reduce, IMongoMapReduceOptions options) { return _connection.GetCurrentCollection().MapReduce(map, reduce, options).GetResults(); }
         public IEnumerable<TResult> MapReduce<TResult>(string map, string reduce, IMongoMapReduceOptions options) { return _connection.GetCurrentCollection().MapReduce(map, reduce, options).GetResultsAs<TResult>(); }
-        
-        #endregion
-
 
     }
 }

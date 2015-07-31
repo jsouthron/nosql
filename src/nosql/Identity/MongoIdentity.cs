@@ -7,19 +7,22 @@ using MongoDB.Bson;
 
 namespace NoSql.Identity
 {
+    using nosql.Extensions;
+
     public abstract class MongoIdentity : IMongoIdentity
     {
-        private object _identity;
-        private long _owner_id;
-        private string _display_name;
+        private readonly object _identity;
+        private readonly long _ownerId;
+        private string _displayName;
         
-        protected MongoIdentity(object obj) 
+        protected MongoIdentity(object obj, string displayName) 
         {
             var t = obj.GetType();
             var prop = t.GetProperty("Id");
             _identity = obj;
+            _displayName = displayName;
 
-            long.TryParse(prop.GetValue(obj, null).ToSafeString(), out _owner_id);
+            long.TryParse(prop.GetValue(obj, null).ToSafeString(), out _ownerId);
         }
 
         public virtual BsonDocument GetIdentity()
@@ -29,12 +32,12 @@ namespace NoSql.Identity
 
         public virtual long GetOwnerId()
         {
-            return _owner_id;
+            return _ownerId;
         }
 
         public virtual bool HasOwnerId()
         {
-            return _owner_id > 0;
+            return _ownerId > 0;
         }
 
         public abstract string GetDisplayName();

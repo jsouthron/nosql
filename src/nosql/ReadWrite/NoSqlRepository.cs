@@ -1,42 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using MongoDB.Driver.Builders;
-using NoSql.Identity;
-
-namespace NoSql
+﻿namespace nosql.ReadWrite
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Extensions;
+    using Interfaces;
+    using MongoDB.Bson;
+    using MongoDB.Driver;
+    using MongoDB.Driver.Builders;
+    using NoSql;
+    using nosql.Connectors;
+    using NoSql.Identity;
+
     public class NoSqlRepository 
     {
-        protected IMongoIdentity _user;
-        protected INoSqlConnect _connection;
-        protected INoSqlArchive _noSqlArchive;
-        protected double __schema_current;
+        protected IMongoIdentity User;
+        protected INoSqlConnect Connection;
+        protected INoSqlArchive NoSqlArchive;
+        protected double SchemaCurrent;
 
         public NoSqlRepository(IMongoIdentity user, double schema) 
         { 
-            _user = user;
-            __schema_current = schema;
-            _connection = new NoSqlDefaultConnect();
-            _noSqlArchive = new NoSqlArchiver(_connection);
+            User = user;
+            SchemaCurrent = schema;
+            Connection = new NoSqlDefaultConnect();
+            NoSqlArchive = new NoSqlArchiver(Connection);
         }
         
         public MongoCursor<TEntity> FindAs<TEntity>(IMongoQuery query)
         {
-            return _connection.GetCurrentCollection().FindAs<TEntity>(query);
+            return Connection.GetCurrentCollection().FindAs<TEntity>(query);
         }
 
         public MongoCursor<BsonDocument> LoadCursor(IMongoQuery query)
         {
-            return _connection.GetCurrentCollection().FindAs<BsonDocument>(query);
+            return Connection.GetCurrentCollection().FindAs<BsonDocument>(query);
         }
 
         public BsonDocument Insert(object obj)
         {
             var doc = obj.ReflectedBsonDocument()
-                .SetCurrentSchema(__schema_current)
+                .SetCurrentSchema(SchemaCurrent)
                 .AddBsonIdString();
 
             return doc;
@@ -44,52 +48,49 @@ namespace NoSql
 
         public bool InsertAs<TEntity>(TEntity obj)
         {
-            return _connection.GetCurrentCollection().Insert<TEntity>(obj).Ok;
+            return Connection.GetCurrentCollection().Insert<TEntity>(obj).Ok;
         }
 
         public IEnumerable<BsonDocument> InsertBatch(IEnumerable<object> items)
         {
-            var docs = items.Select(obj =>
-            {
-                return obj.ReflectedBsonDocument()
-                        .SetCurrentSchema(__schema_current)
-                        .AddBsonIdString();
-            });
+            var docs = items.Select(obj => obj.ReflectedBsonDocument()
+                .SetCurrentSchema(SchemaCurrent)
+                .AddBsonIdString());
             
-            _connection.GetCurrentCollection().InsertBatch(docs);
+            Connection.GetCurrentCollection().InsertBatch(docs);
 
             return docs;
         }
 
         public int InsertBatchAs<TEntity>(IEnumerable<TEntity> items)
         {
-            int rows_affected = 0;
+            var rowsAffected = 0;
             items.ToList().ForEach(item => {
-                var result = _connection.GetCurrentCollection().Insert<TEntity>(item).Ok;
-                if (result) rows_affected++;
+                var result = Connection.GetCurrentCollection().Insert<TEntity>(item).Ok;
+                if (result) rowsAffected++;
             });
 
-            return rows_affected;
+            return rowsAffected;
         }
 
         public int SaveAllAs<TEntity>(IEnumerable<TEntity> items)
         {
-            int rows_affected = 0;
+            var rowsAffected = 0;
             items.ToList().ForEach(item =>
             {
-                var result = _connection.GetCurrentCollection().Save<TEntity>(item).Ok;
-                if (result) rows_affected++;
+                var result = Connection.GetCurrentCollection().Save<TEntity>(item).Ok;
+                if (result) rowsAffected++;
             });
 
-            return rows_affected;
+            return rowsAffected;
         }
 
         public BsonDocument FindAndModify(object obj, IMongoQuery query)
         {
             var id = obj.ExtractSafeString("Id");
-            var updates = obj.AttachUpdateMetaData(_user, __schema_current);
+            var updates = obj.AttachUpdateMetaData(User, SchemaCurrent);
 
-            var doc = _connection
+            var doc = Connection
                 .GetCurrentCollection()
                 .FindAndModify(
                     QueryConstants.ById(id, query),
@@ -99,13 +100,11 @@ namespace NoSql
                 .ModifiedDocument;
 
             return doc;
-
-            throw new NotImplementedException();
         }
 
         public bool Update(IMongoUpdate update, IMongoQuery query)
         {
-            return _connection
+            return Connection
                 .GetCurrentCollection()
                 .Update(query, update).Ok;
         }
@@ -117,13 +116,13 @@ namespace NoSql
 
         public NoSqlRepository ChangeDatabase(string database, string collection)
         {
-            _connection.ChangeDatabase(database, collection);
+            Connection.ChangeDatabase(database, collection);
             return this;
         }
     
         public INoSqlConnect GetCurrentConnection()
         {
-            return _connection;
+            return Connection;
         }
     }
 }

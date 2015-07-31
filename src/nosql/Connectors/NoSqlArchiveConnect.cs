@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Configuration;
-
-namespace NoSql
+﻿namespace nosql.Connectors
 {
-	public class NoSqlArchiveConnect:NoSqlDefaultConnect
+    using System.Configuration;
+    using NoSql;
+
+    public class NoSqlArchiveConnect:NoSqlDefaultConnect
 	{
         public NoSqlArchiveConnect() : base(ConfigurationManager.ConnectionStrings[Constants.NoSqlArchiveConnectionString].ConnectionString) { }
 	}

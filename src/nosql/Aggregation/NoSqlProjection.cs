@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MongoDB.Bson;
-
-namespace NoSql.Aggregate
+﻿namespace nosql.Aggregation
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using MongoDB.Bson;
+
     public class NoSqlProjection
     {
-        private List<string> _includefields;
-        private List<string> _removefields;
-        private IDictionary<string, object> _computedfields;
-        private List<BsonElement> _renamefields;
-        private List<BsonElement> _insertfields;
-        private BsonDocument _projection;
+        private readonly List<string> _includefields;
+        private readonly List<string> _removefields;
+        private readonly IDictionary<string, object> _computedfields;
+        private readonly List<BsonElement> _renamefields;
+        private readonly List<BsonElement> _insertfields;
+        private readonly BsonDocument _projection;
 
         public NoSqlProjection()
         {

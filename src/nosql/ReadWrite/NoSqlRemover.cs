@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MongoDB.Bson;
-using MongoDB.Driver.Builders;
-using MongoDB.Driver;
-
-namespace NoSql
+﻿namespace nosql.ReadWrite
 {
+    using System;
+    using MongoDB.Driver;
+    using nosql.Interfaces;
+
     public class NoSqlRemover:INoSqlRemove
     {
-        private INoSqlConnect _connection;
+        private readonly INoSqlConnect _connection;
         public NoSqlRemover(INoSqlConnect connection)
         {
             _connection = connection;

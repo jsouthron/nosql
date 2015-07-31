@@ -1,49 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MongoDB.Driver;
-using System.Configuration;
-
-namespace NoSql
+﻿namespace nosql.Connectors
 {
+    using System.Configuration;
+    using Interfaces;
+    using MongoDB.Driver;
+    using NoSql;
+
     public class NoSqlDefaultConnect: INoSqlConnect
     {
-        protected MongoCollection _collection;
-        protected MongoDatabase _database;
-        protected MongoServer _server;
+        protected MongoCollection Collection;
+        protected MongoDatabase Database;
+        protected MongoServer Server;
 
         public NoSqlDefaultConnect() : this(ConfigurationManager.ConnectionStrings[Constants.NoSqlConnectionString].ConnectionString) { }
 
         public NoSqlDefaultConnect(string connectionString)
         {
-            _server = new MongoClient(connectionString).GetServer();
+            Server = new MongoClient(connectionString).GetServer();
         }
 
         public NoSqlDefaultConnect(string database, string collection, string connectionString)
         {
-            _server = new MongoClient(connectionString).GetServer();
-            _database = _server.GetDatabase(database);
-            _collection = _database.GetCollection(collection);
+            Server = new MongoClient(connectionString).GetServer();
+            Database = Server.GetDatabase(database);
+            Collection = Database.GetCollection(collection);
         }
 
         public virtual INoSqlConnect ChangeCollection(string collectionName)
         {
-            _collection = _database.GetCollection(collectionName);
+            Collection = Database.GetCollection(collectionName);
             return this;
         }
 
         public virtual INoSqlConnect ChangeDatabase(string databaseName, string collectionName = null)
         {
-            _database = _server.GetDatabase(databaseName);
-            _collection = _database.GetCollection(collectionName ?? _collection.Name);
+            Database = Server.GetDatabase(databaseName);
+            Collection = Database.GetCollection(collectionName ?? Collection.Name);
             return this;
         }
 
 
         public MongoCollection GetCurrentCollection()
         {
-            return _collection;
+            return Collection;
         }
     }
 }

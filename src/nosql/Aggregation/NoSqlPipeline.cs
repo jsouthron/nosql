@@ -1,38 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MongoDB.Bson;
-using MongoDB.Driver.Builders;
-using MongoDB.Driver;
-
-namespace NoSql.Aggregate
+﻿namespace nosql.Aggregation
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using MongoDB.Bson;
+    using MongoDB.Driver;
+
     public class NoSqlPipeline
     {
-        private bool _fieldsKnown;
-        
         public string Database { get; set; }
         public string Collection { get; set; }
 
-        public List<BsonDocument> pipeline { get; set; }
+        public List<BsonDocument> Pipeline { get; set; }
         public List<string> Fields { get; set; }
-        public string Explain { get { return string.Join(", ", pipeline).Replace('"', '\''); } }
+        public string Explain { get { return string.Join(", ", Pipeline).Replace('"', '\''); } }
 
         public Func<BsonDocument, BsonDocument> PostFilter { get; set; }
 
         public NoSqlPipeline()
         {
-            pipeline = new List<BsonDocument>();
-            _fieldsKnown = false;
+            Pipeline = new List<BsonDocument>();
         }
 
         public NoSqlPipeline(string db, string coll)
         {
-            pipeline = new List<BsonDocument>();
+            Pipeline = new List<BsonDocument>();
             Database = db;
             Collection = coll;
-            _fieldsKnown = false;
         }
 
         public NoSqlPipeline Match(IMongoQuery query)
@@ -40,24 +34,24 @@ namespace NoSql.Aggregate
             var match = new BsonDocument()
                 .Add(new BsonElement("$match", query.ToBsonDocument()));
 
-            pipeline.Add(match);
+            Pipeline.Add(match);
 
             return this;
         }
 
         public NoSqlPipeline Group(string id, params KeyValuePair<string, BsonDocument>[] funcs)
         {
-            var id_label = 
+            var idLabel = 
                 String.IsNullOrEmpty(id) ? 
                 BsonNull.Value : 
                 BsonValue.Create("$" + id);
 
-            var aggregators = new BsonDocument().Add(new BsonElement("_id", id_label));
+            var aggregators = new BsonDocument().Add(new BsonElement("_id", idLabel));
             foreach (KeyValuePair<string, BsonDocument> item in funcs)
                 aggregators.Add(item.Key, item.Value);
 
             var group = new BsonDocument{{ "$group", aggregators }};
-            pipeline.Add(group);
+            Pipeline.Add(group);
 
             return this;
         }
@@ -72,7 +66,7 @@ namespace NoSql.Aggregate
                 aggregators.Add(item.Key, item.Value);
 
             var group = new BsonDocument { { "$group", aggregators } };
-            pipeline.Add(group);
+            Pipeline.Add(group);
 
             return this;
         }
@@ -85,7 +79,7 @@ namespace NoSql.Aggregate
                 doc.Add(field, order);
             }
 
-            pipeline.Add(new BsonDocument { { "$sort", doc } });
+            Pipeline.Add(new BsonDocument { { "$sort", doc } });
             return this;
         }
 
@@ -97,21 +91,20 @@ namespace NoSql.Aggregate
                 doc.Add(field.Name, field.SortOrder);
             }
 
-            pipeline.Add(new BsonDocument { { "$sort", doc } });
+            Pipeline.Add(new BsonDocument { { "$sort", doc } });
             return this;
         }
 
         public NoSqlPipeline Sort(string field, NoSqlAggregateSort order = NoSqlAggregateSort.Ascending)
         {
-            pipeline.Add(new BsonDocument { { "$sort", new BsonDocument { { field, order } } } });
+            Pipeline.Add(new BsonDocument { { "$sort", new BsonDocument { { field, order } } } });
             return this;
         }
 
         public NoSqlPipeline Project(NoSqlProjection projection)
         {
-            pipeline.Add(new BsonDocument {{ "$project", projection.GetProjection() }});
+            Pipeline.Add(new BsonDocument {{ "$project", projection.GetProjection() }});
             Fields = projection.GetFields().ToList();
-            _fieldsKnown = true;
 
             return this;
         }
@@ -119,35 +112,34 @@ namespace NoSql.Aggregate
         public NoSqlPipeline Project(params string[] args)
         {
             var projection = new NoSqlProjection(args);
-            pipeline.Add(new BsonDocument { { "$project", projection.GetProjection() } });
+            Pipeline.Add(new BsonDocument { { "$project", projection.GetProjection() } });
 
             Fields = projection.GetFields().ToList();
-            _fieldsKnown = true;
 
             return this;
         }
 
         public NoSqlPipeline Limit(int limit)
         {
-            pipeline.Add(new BsonDocument {{ "$limit", limit }});
+            Pipeline.Add(new BsonDocument {{ "$limit", limit }});
             return this;
         }
 
         public NoSqlPipeline Skip(int skip)
         {
-            pipeline.Add(new BsonDocument { { "$skip", skip } });
+            Pipeline.Add(new BsonDocument { { "$skip", skip } });
             return this;
         }
 
         public NoSqlPipeline Unwind(string field)
         {
-            pipeline.Add(new BsonDocument {{ "$unwind", NoSqlField.Create(field) }});
+            Pipeline.Add(new BsonDocument {{ "$unwind", NoSqlField.Create(field) }});
             return this;
         }
 
         public NoSqlPipeline GeoNear(double[] location, string distanceField, params BsonElement[] opts)
         {
-            if (pipeline.Count > 0)
+            if (Pipeline.Count > 0)
             {
                 throw new InvalidOperationException("You can only use $geoNear as the first stage of a pipeline.");
             }
@@ -165,7 +157,7 @@ namespace NoSql.Aggregate
 
             doc.AddRange(opts);
 
-            pipeline.Add(new BsonDocument { { "$geoNear", doc } });
+            Pipeline.Add(new BsonDocument { { "$geoNear", doc } });
             Fields.Add("dist");
             return this;
         }

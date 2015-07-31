@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MongoDB.Bson;
-
-namespace NoSql.Aggregate
+﻿namespace nosql.Aggregation
 {
+    using System.Collections.Generic;
+    using MongoDB.Bson;
+
     public class NoSqlGroupOperators
     {
         public static KeyValuePair<string, BsonDocument> AddToSet(string label, string field) { return new KeyValuePair<string, BsonDocument>(label, new BsonDocument("$addToSet", NoSqlField.Create(field))); }
@@ -73,9 +70,9 @@ namespace NoSql.Aggregate
 
     public class NoSqlConditional
     {
-        public static KeyValuePair<string, object> InlineCondition(string label, object condition, object true_result, object false_result)
+        public static KeyValuePair<string, object> InlineCondition(string label, object condition, object trueResult, object falseResult)
         {
-            return new KeyValuePair<string, object>(label, new BsonDocument("$cond", new BsonArray(new List<object> { condition, true_result, false_result })));
+            return new KeyValuePair<string, object>(label, new BsonDocument("$cond", new BsonArray(new List<object> { condition, trueResult, falseResult })));
         }
 
         public static KeyValuePair<string, object> IfNull(string label, object left, object right)

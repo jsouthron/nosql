@@ -74,22 +74,30 @@
     <Compile Include="Connectors\NoSqlArchiveConnect.cs" />
     <Compile Include="Connectors\NoSqlDefaultConnect.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Entity\IMongoDbContext.cs" />
+    <Compile Include="Entity\IMongoEntityMap.cs" />
+    <Compile Include="Entity\MongoAggregateEntity.cs" />
+    <Compile Include="Entity\MongoCompositeEntity.cs" />
     <Compile Include="Entity\MongoEntity.cs" />
+    <Compile Include="Entity\MongoEntityComparer.cs" />
     <Compile Include="Entity\MongoMultiMap.cs" />
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="Extensions\BsonDocumentFormatters.cs" />
     <Compile Include="Extensions\NoSqlExtensions.cs" />
+    <Compile Include="Extensions\QueryConstants.cs" />
+    <Compile Include="Extensions\UpdateConstants.cs" />
     <Compile Include="Identity\IMongoIdentity.cs" />
     <Compile Include="Identity\MongoIdentity.cs" />
     <Compile Include="Interfaces\NoSqlInterfaces.cs" />
     <Compile Include="Location\MongoLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Provider\AggregateQuery.cs" />
-    <Compile Include="Provider\QueryTranslator.cs" />
-    <Compile Include="Provider\TypeSystem.cs" />
     <Compile Include="ReadWrite\NoSqlArchiver.cs" />
     <Compile Include="ReadWrite\NoSqlReader.cs" />
     <Compile Include="ReadWrite\NoSqlRemover.cs" />
     <Compile Include="ReadWrite\NoSqlRepository.cs" />
+    <Compile Include="StateDictionary.cs" />
+    <Compile Include="Writers\MongoWorksheet.cs" />
+    <Compile Include="Writers\MongoWorksheetCollection.cs" />
     <Compile Include="Writers\NoSqlExcelWriter.cs" />
   </ItemGroup>
   <ItemGroup>

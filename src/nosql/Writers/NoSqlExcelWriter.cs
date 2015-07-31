@@ -1,24 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using MongoDB.Bson;
-using OfficeOpenXml;
-using OfficeOpenXml.Style;
-using OfficeOpenXml.Table.PivotTable;
-
-namespace NoSql
+﻿namespace nosql.Writers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Drawing;
+    using System.IO;
+    using System.Linq;
+    using MongoDB.Bson;
+    using OfficeOpenXml;
+    using OfficeOpenXml.Style;
+    using OfficeOpenXml.Table.PivotTable;
+
     public static class ExcelWriter
     {
         public static FileInfo ToExcelFile(this MongoWorksheetCollection collection)
         {
-            string tempPath = Path.GetTempPath() + "Report-" + Guid.NewGuid().ToString() + ".xlsx";
+            var tempPath = Path.GetTempPath() + "Report-" + Guid.NewGuid() + ".xlsx";
 
-            FileInfo newFile = new FileInfo(tempPath);
-            ExcelPackage package = new ExcelPackage(newFile);
+            var newFile = new FileInfo(tempPath);
+            var package = new ExcelPackage(newFile);
             
             foreach (var ws in collection.Worksheets)
             {
@@ -32,10 +32,10 @@ namespace NoSql
 
         public static FileInfo ToExcelFile(this IEnumerable<BsonDocument> data, string worksheetName, IEnumerable<string> headings)
         {
-            string tempPath = Path.GetTempPath() + "Report-" + Guid.NewGuid().ToString() + ".xlsx";
-            FileInfo newFile = new FileInfo(tempPath);
+            var tempPath = Path.GetTempPath() + "Report-" + Guid.NewGuid() + ".xlsx";
+            var newFile = new FileInfo(tempPath);
 
-            ExcelPackage package = new ExcelPackage(newFile);
+            var package = new ExcelPackage(newFile);
             AddWorksheet(data, worksheetName, headings, package);
             package.Save();
 
@@ -44,8 +44,8 @@ namespace NoSql
 
         private static void AddWorksheet(IEnumerable<BsonDocument> data, string worksheetName, IEnumerable<string> headings, ExcelPackage package)
         {
-            ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(worksheetName);
-            int headingCount = 0;
+            var worksheet = package.Workbook.Worksheets.Add(worksheetName);
+            var headingCount = 0;
             foreach (var item in headings)
                 worksheet.Cells[1, ++headingCount].Value = item;
 
@@ -54,7 +54,7 @@ namespace NoSql
             foreach (var item in data)
             {
                 ++row;
-                for (int col = 1; col <= headingCount; col++)
+                for (var col = 1; col <= headingCount; col++)
                 {
                     if (item.Names.Contains(headings.ElementAt(col - 1)))
                     {
@@ -64,7 +64,7 @@ namespace NoSql
                 }
             }
 
-            using (ExcelRange range = worksheet.Cells[1, 1, 1, headingCount])
+            using (var range = worksheet.Cells[1, 1, 1, headingCount])
             {
                 range.Style.Font.Bold = true;
                 range.Style.Fill.PatternType = ExcelFillStyle.Solid;
@@ -74,10 +74,10 @@ namespace NoSql
 
             worksheet.View.PageLayoutView = false;
 
-            ExcelRange dataRange = worksheet.Cells[worksheet.Dimension.Address.ToString()];
+            var dataRange = worksheet.Cells[worksheet.Dimension.Address.ToString()];
             dataRange.AutoFitColumns();
 
-            ExcelPivotTable pivotTable = worksheet.PivotTables.Add(worksheet.Cells["F3"], dataRange, "Pivotname");
+            var pivotTable = worksheet.PivotTables.Add(worksheet.Cells["F3"], dataRange, "Pivotname");
             pivotTable.MultipleFieldFilters = true;
             pivotTable.RowGrandTotals = true;
             pivotTable.ColumGrandTotals = true;
@@ -95,57 +95,22 @@ namespace NoSql
             pivotTable.FirstDataCol = 2;
             pivotTable.RowHeaderCaption = "Counts";
 
-            ExcelPivotTableField orgNameField = pivotTable.Fields["Name"];
+            var orgNameField = pivotTable.Fields["Name"];
             pivotTable.RowFields.Add(orgNameField);
 
-            ExcelPivotTableField countField = pivotTable.Fields[3];
+            var countField = pivotTable.Fields[3];
             pivotTable.DataFields.Add(countField);
 
-            ExcelPivotTableField monthField = pivotTable.Fields["Month"];
+            var monthField = pivotTable.Fields["Month"];
             monthField.Sort = OfficeOpenXml.Table.PivotTable.eSortType.Ascending;
             pivotTable.ColumnFields.Add(monthField);
         }
 
         public static void OpenExcel(this FileInfo file, bool delete = true)
         {
-            Process process = Process.Start(file.FullName);
-            process.WaitForExit();
+            var process = Process.Start(file.FullName);
+            if (process != null) process.WaitForExit();
             if (delete) File.Delete(file.FullName);
-        }
-    }
-
-    public class MongoWorksheet
-    {
-        public IEnumerable<BsonDocument> Data { get; set; }
-        public string Name { get; set; }
-        public IEnumerable<string> Headers { get; set; }
-    }
-
-    public class MongoWorksheetCollection 
-    {
-        public List<MongoWorksheet> Worksheets { get; set; }
-
-        public MongoWorksheetCollection()
-        {
-            Worksheets = new List<MongoWorksheet>();
-        }
-
-        public MongoWorksheetCollection(params MongoWorksheet[] items)
-        {
-            Worksheets = new List<MongoWorksheet>();
-            Worksheets.AddRange(items);
-        }
-
-        public MongoWorksheetCollection Add(MongoWorksheet item)
-        {
-            Worksheets.Add(item);
-            return this;
-        }
-
-        public MongoWorksheetCollection Add(params MongoWorksheet[] items)
-        {
-            Worksheets.AddRange(items);
-            return this;
         }
     }
 }

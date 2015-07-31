@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MongoDB.Driver;
-using MongoDB.Bson;
-using NoSql.Identity;
-
-
-namespace NoSql.Aggregate
+﻿namespace nosql.Aggregation
 {
+    using Interfaces;
+    using NoSql;
+    using NoSql.Identity;
+
     public class NoSqlReportAggregator : NoSqlAggregator
     {
-        protected IMongoIdentity _user;
-        protected INoSqlConnect _connector;
+        protected IMongoIdentity User;
+        protected INoSqlConnect Connector;
 
         public NoSqlReportAggregator(INoSqlConnect connector, IMongoIdentity user) : base(connector) 
         { 
-            _user = user; 
-            _connector = connector; 
+            User = user; 
+            Connector = connector;  
         }
     
     }

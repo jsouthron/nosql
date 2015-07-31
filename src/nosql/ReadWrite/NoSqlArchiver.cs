@@ -1,25 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MongoDB.Bson;
-using MongoDB.Driver.Builders;
-using MongoDB.Driver;
-
-namespace NoSql
+﻿namespace nosql.ReadWrite
 {
+    using System;
+    using Interfaces;
+    using MongoDB.Driver;
+    using MongoDB.Driver.Builders;
+    using NoSql;
+    using nosql.Connectors;
+
     public class NoSqlArchiver:NoSqlRemover, INoSqlArchive
     {
-        protected INoSqlConnect _originServer;
-        protected INoSqlConnect _archiveServer;
+        protected INoSqlConnect OriginServer;
+        protected INoSqlConnect ArchiveServer;
 
         public NoSqlArchiver(INoSqlConnect originServer) : this(originServer, new NoSqlArchiveConnect()) { }
 
         public NoSqlArchiver(INoSqlConnect originServer, INoSqlConnect archiveServer):base(originServer)
         {
-            _originServer = originServer;
-            _archiveServer = archiveServer;
-            if (_originServer == null || _archiveServer == null)
+            OriginServer = originServer;
+            ArchiveServer = archiveServer;
+            if (OriginServer == null || ArchiveServer == null)
                 throw new ArgumentNullException("Servers must not be null");
         }
 
@@ -27,16 +26,16 @@ namespace NoSql
         {
             if (query == null)
                 throw new ArgumentNullException("Query must not be null");
-            var collection = _originServer.GetCurrentCollection();
-            _archiveServer.ChangeDatabase(collection.Database.Name, collection.Name);
+            var collection = OriginServer.GetCurrentCollection();
+            ArchiveServer.ChangeDatabase(collection.Database.Name, collection.Name);
 
             var result = false;
-            var document = _originServer.GetCurrentCollection().FindAndRemove(query, SortBy.Null).ModifiedDocument;
+            var document = OriginServer.GetCurrentCollection().FindAndRemove(query, SortBy.Null).ModifiedDocument;
             if (document != null)
             {
                 document["DeletedOn"] = DateTime.Now;
                 document["DeletedBy"] = userId;
-                _archiveServer.GetCurrentCollection().Save(document);
+                ArchiveServer.GetCurrentCollection().Save(document);
             }
             return result;
         }

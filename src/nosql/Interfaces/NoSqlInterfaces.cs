@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using MongoDB.Driver.Builders;
-
-
-namespace NoSql
+﻿namespace nosql.Interfaces
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using MongoDB.Bson;
+    using MongoDB.Driver;
+    using MongoDB.Driver.Builders;
+
     public interface INoSqlRead
     {
         MongoCursor<BsonDocument> LoadCursor(IMongoQuery query);
@@ -19,7 +18,7 @@ namespace NoSql
     {
         BsonDocument NoSqlUpdateDoc(UpdateBuilder update, IMongoQuery query);
         BsonDocument NoSqlUpdateDoc(List<UpdateBuilder> updates, IMongoQuery query);
-        BsonDocument NoSQLSaveDoc(BsonDocument doc);
+        BsonDocument NoSqlSaveDoc(BsonDocument doc);
         INoSqlConnect GetCurrentConnection();        
     }
 

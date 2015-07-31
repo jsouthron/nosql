@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Collections;
-using MongoDB.Driver;
-using MongoDB.Bson;
-
-namespace NoSql
+﻿namespace nosql.ReadWrite
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Interfaces;
+    using MongoDB.Bson;
+    using MongoDB.Driver;
+    using NoSql;
+    using nosql.Connectors;
+
     public class NoSqlReader : INoSqlRead
     {
-        private INoSqlConnect _connection;
+        private readonly INoSqlConnect _connection;
 
         public NoSqlReader()
         {

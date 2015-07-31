@@ -8,13 +8,13 @@ namespace NoSql.Aggregation
     public class NoSqlMapReduce
     {
 
-        public string map = @"
+        public string Map = @" 
             function() {
                 var movie = this;
                 emit(movie.Category, { count: 1, totalMinutes: movie.Minutes });
             }";
 
-        public string reduce = @"        
+        public string Reduce = @"        
             function(key, values) {
                 var result = {count: 0, totalMinutes: 0 };
 
@@ -26,7 +26,7 @@ namespace NoSql.Aggregation
                 return result;
             }";
 
-        public string finalize = @"
+        public string Finalize = @"
             function(key, value){
       
               value.average = value.totalMinutes / value.count;
